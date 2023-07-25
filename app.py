@@ -6,7 +6,7 @@ import joblib
 app = Flask(__name__)
 
 # Load the trained kNN model
-knn_model = joblib.load('server\model\knn_model.pkl')
+knn_model = joblib.load('knn_model.pkl')
 
 # Mapping of class labels to information
 class_info = {
@@ -27,6 +27,10 @@ class_info = {
     'Fire Risk': 'Extra Dark Level Coffee',
     'Green Beans': 'Raw Coffee Beans',
 }
+
+@app.route("/")
+def hello_world():
+    return "<p>Hello, World!</p>"
 
 @app.route('/classify', methods=['POST'])
 def classify_image():
@@ -57,4 +61,4 @@ def classify_image():
     }
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True, host='0.0.0.0', port=80)
