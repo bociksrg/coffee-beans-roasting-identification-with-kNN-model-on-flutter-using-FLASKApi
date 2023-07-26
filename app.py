@@ -43,43 +43,32 @@ def classify_image():
     img_hsv = cv2.cvtColor(img_resized, cv2.COLOR_BGR2HSV)
     # Extract features from the preprocessed image
     # Compute mean of each channel
-    feature_mean_hue = np.mean(image_hsv[:, :, 0])
-    feature_mean_saturation = np.mean(image_hsv[:, :, 1])
-    feature_mean_value = np.mean(image_hsv[:, :, 2])
+    feature_mean_hue = np.mean(img_hsv[:, :, 0])
+    feature_mean_saturation = np.mean(img_hsv[:, :, 1])
+    feature_mean_value = np.mean(img_hsv[:, :, 2])
 
     # Compute median of each channel
-    feature_median_hue = np.median(image_hsv[:, :, 0])
-    feature_median_saturation = np.median(image_hsv[:, :, 1])
-    feature_median_value = np.median(image_hsv[:, :, 2])
-
-    # # Compute histograms for each channel (you can specify the number of bins)
-    # num_bins = 256
-    # hist_hue, _ = np.histogram(image_hsv[:, :, 0], bins=num_bins, range=[0, 256])
-    # hist_saturation, _ = np.histogram(image_hsv[:, :, 1], bins=num_bins, range=[0, 256])
-    # hist_value, _ = np.histogram(image_hsv[:, :, 2], bins=num_bins, range=[0, 256])
-
-    # # Convert histograms to numpy arrays
-    # hist_hue = np.array(hist_hue)
-    # hist_saturation = np.array(hist_saturation)
-    # hist_value = np.array(hist_value)
+    feature_median_hue = np.median(img_hsv[:, :, 0])
+    feature_median_saturation = np.median(img_hsv[:, :, 1])
+    feature_median_value = np.median(img_hsv[:, :, 2])
 
     # Compute 25th and 75th percentiles for each channel
-    feature_percentile_25_hue = np.percentile(image_hsv[:, :, 0], 25)
-    feature_percentile_25_saturation = np.percentile(image_hsv[:, :, 1], 25)
-    feature_percentile_25_value = np.percentile(image_hsv[:, :, 2], 25)
-    feature_percentile_75_hue = np.percentile(image_hsv[:, :, 0], 75)
-    feature_percentile_75_saturation = np.percentile(image_hsv[:, :, 1], 75)
-    feature_percentile_75_value = np.percentile(image_hsv[:, :, 2], 75)
+    feature_percentile_25_hue = np.percentile(img_hsv[:, :, 0], 25)
+    feature_percentile_25_saturation = np.percentile(img_hsv[:, :, 1], 25)
+    feature_percentile_25_value = np.percentile(img_hsv[:, :, 2], 25)
+    feature_percentile_75_hue = np.percentile(img_hsv[:, :, 0], 75)
+    feature_percentile_75_saturation = np.percentile(img_hsv[:, :, 1], 75)
+    feature_percentile_75_value = np.percentile(img_hsv[:, :, 2], 75)
 
     # Compute standard deviation of each channel
-    feature_std_hue = np.std(image_hsv[:, :, 0])
-    feature_std_saturation = np.std(image_hsv[:, :, 1])
-    feature_std_value = np.std(image_hsv[:, :, 2])
+    feature_std_hue = np.std(img_hsv[:, :, 0])
+    feature_std_saturation = np.std(img_hsv[:, :, 1])
+    feature_std_value = np.std(img_hsv[:, :, 2])
 
     # Compute variance of each channel
-    feature_var_hue = np.var(image_hsv[:, :, 0])
-    feature_var_saturation = np.var(image_hsv[:, :, 1])
-    feature_var_value = np.var(image_hsv[:, :, 2])
+    feature_var_hue = np.var(img_hsv[:, :, 0])
+    feature_var_saturation = np.var(img_hsv[:, :, 1])
+    feature_var_value = np.var(img_hsv[:, :, 2])
 
     return [feature_mean_hue, feature_mean_saturation, feature_mean_value,
             feature_median_hue, feature_median_saturation, feature_median_value,
@@ -97,6 +86,7 @@ def classify_image():
             feature_percentile_75_hue, feature_percentile_75_saturation, feature_percentile_75_value,
             feature_std_hue, feature_std_saturation, feature_std_value,
             feature_var_hue, feature_var_saturation, feature_var_value]]
+    
     # Classify the image using the kNN model
     prediction = knn_model.predict(features)
     class_label = str(prediction[0])
