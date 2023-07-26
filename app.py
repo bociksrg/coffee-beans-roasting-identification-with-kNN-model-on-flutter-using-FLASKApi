@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import cv2
 import numpy as np
 import joblib
@@ -28,20 +28,17 @@ class_info = {
     'Green Beans': 'Raw Coffee Beans',
 }
 
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
-
-@app.route('/classify', methods=['POST'])
-def classify_image():
-    
-    # Receive the image from the Flutter app
-    image = request.files['image']
+def extract_features_from_image(image):
     # Perform HSV image preprocessing
-    img = cv2.imdecode(np.fromstring(image.read(), np.uint8), cv2.IMREAD_COLOR)
-    img_resized = cv2.resize(img, (640, 640))
+    img_resized = cv2.resize(image, (640, 640))
     img_hsv = cv2.cvtColor(img_resized, cv2.COLOR_BGR2HSV)
+
     # Extract features from the preprocessed image
+    features = extract_features_from_hsv(img_hsv)
+
+    return features
+
+def extract_features_from_hsv(img_hsv):
     # Compute mean of each channel
     feature_mean_hue = np.mean(img_hsv[:, :, 0])
     feature_mean_saturation = np.mean(img_hsv[:, :, 1])
@@ -72,28 +69,35 @@ def classify_image():
 
     return [feature_mean_hue, feature_mean_saturation, feature_mean_value,
             feature_median_hue, feature_median_saturation, feature_median_value,
-            # *hist_hue.tolist(), *hist_saturation.tolist(), *hist_value.tolist(),
             feature_percentile_25_hue, feature_percentile_25_saturation, feature_percentile_25_value,
             feature_percentile_75_hue, feature_percentile_75_saturation, feature_percentile_75_value,
             feature_std_hue, feature_std_saturation, feature_std_value,
             feature_var_hue, feature_var_saturation, feature_var_value]
-    
-    # Prepare the features for classification
-    features = [[feature_mean_hue, feature_mean_saturation, feature_mean_value,
-            feature_median_hue, feature_median_saturation, feature_median_value,
-            # *hist_hue.tolist(), *hist_saturation.tolist(), *hist_value.tolist(),
-            feature_percentile_25_hue, feature_percentile_25_saturation, feature_percentile_25_value,
-            feature_percentile_75_hue, feature_percentile_75_saturation, feature_percentile_75_value,
-            feature_std_hue, feature_std_saturation, feature_std_value,
-            feature_var_hue, feature_var_saturation, feature_var_value]]
-    
+
+@app.route("/")
+def hello_world():
+    return "<p>Hello, World!</p>"
+
+@app.route('/classify', methods=['POST'])
+def classify_image():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image found in the request'}), 400
+
+    image = request.files['image'].read()
+    nparr = np.frombuffer(image, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Extract features from the preprocessed image
+    features = extract_features_from_image(img)
+    features_for_classification = [features]
+
     # Classify the image using the kNN model
-    prediction = knn_model.predict(features)
+    prediction = knn_model.predict(features_for_classification)
     class_label = str(prediction[0])
-    app.logger.info(class_label)
-    
+
     # Get the information about the class label
     class_information = class_info.get(class_label, 'Unknown class')
+
     # Return the classification result and information as a response
     return {
         'result': class_label,
